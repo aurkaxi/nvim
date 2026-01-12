@@ -10,11 +10,10 @@ return {
 		})
 		vim.lsp.config('lua_ls', {})
 
-
 		vim.lsp.enable('ruff')
 		vim.lsp.enable("pyright")
 		vim.lsp.enable('lua_ls')
-
+		vim.lsp.enable('dartls')
 
 		vim.api.nvim_create_autocmd("LspAttach", {
 			group = vim.api.nvim_create_augroup('UserLspConfig', {
