@@ -1,6 +1,9 @@
 return {
 	"neovim/nvim-lspconfig",
 	config = function()
+		local lsp_group = vim.api.nvim_create_augroup('UserLspConfig', { clear = true })
+
+		-- python
 		vim.lsp.config('ruff', {
 			-- init_options = {
 			--     settings = {
@@ -8,51 +11,50 @@ return {
 			--     }
 			-- }
 		})
-		vim.lsp.config('lua_ls', {})
-
 		vim.lsp.enable('ruff')
 		vim.lsp.enable("pyright")
+
+		vim.api.nvim_create_autocmd("LspAttach", {
+			group = lsp_group,
+			callback = function(args)
+				local client = vim.lsp.get_client_by_id(args.data.client_id)
+				if client and client.name == 'ruff' then
+					-- Disable ruff hover in favor of Pyright
+					client.server_capabilities.hoverProvider = false
+				end
+			end,
+			desc = 'LSP: Disable specific server capabilities'
+		}
+		)
+
+
+		vim.lsp.config('lua_ls', {})
 		vim.lsp.enable('lua_ls')
 		vim.lsp.enable('dartls')
 
+		-- misc
 		vim.api.nvim_create_autocmd("LspAttach", {
-			group = vim.api.nvim_create_augroup('UserLspConfig', {
-				clear = true
-			}),
+			group = lsp_group,
 			callback = function(args)
 				local client = vim.lsp.get_client_by_id(args.data.client_id)
-				if client == nil then
-					return
-				end
 
-				-- Disable hover in favor of Pyright
-				if client.name == 'ruff' then
-					client.server_capabilities.hoverProvider = false
-				end
-
-				-- Format on save
-				if not client:supports_method('textDocument/willSaveWaitUntil') and client:supports_method('textDocument/formatting') then
-					vim.api.nvim_create_autocmd(
-						'BufWritePre', {
-							group = vim.api.nvim_create_augroup(
-								'UserLspConfig', {
-									clear = false
-								}
-							),
-							buffer = args.buf,
-							callback = function()
-								vim.lsp.buf.format({
-									bufnr = args.buf,
-									id = client.id,
-									timeout_ms = 3000,
-								})
-							end,
-
-						}
-					)
+				-- Check if the client supports formatting but not the wait-until method
+				if client and
+				    not client:supports_method('textDocument/willSaveWaitUntil') and client:supports_method('textDocument/formatting') then
+					vim.api.nvim_create_autocmd('BufWritePre', {
+						buffer = args.buf,
+						callback = function()
+							vim.lsp.buf.format({
+								bufnr = args.buf,
+								id = client.id,
+								timeout_ms = 3000,
+							})
+						end,
+						desc = 'LSP: Format on save',
+					})
 				end
 			end,
-			desc = 'LSP: Disable hover capability from Ruff'
+			desc = 'LSP: Setup format-on-save'
 		})
 	end
 }
