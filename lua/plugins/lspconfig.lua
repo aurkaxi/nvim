@@ -12,6 +12,7 @@ return {
       -- }
     })
     vim.lsp.enable('ruff')
+    vim.lsp.enable('ty')
     vim.lsp.enable("pyright")
 
     vim.api.nvim_create_autocmd("LspAttach", {
@@ -28,8 +29,11 @@ return {
     )
 
 
+    -- lua
     vim.lsp.config('lua_ls', {})
     vim.lsp.enable('lua_ls')
+
+    -- dart
     vim.lsp.enable('dartls')
 
     -- misc
