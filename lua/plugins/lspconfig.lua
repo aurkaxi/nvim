@@ -30,11 +30,24 @@ return {
 
 
     -- lua
-    vim.lsp.config('lua_ls', {})
+    vim.lsp.config('lua_ls', {
+      settings = {
+        Lua = {
+          diagnostics = {
+            globals = { "vim" },
+          }
+        }
+      }
+    })
+
     vim.lsp.enable('lua_ls')
 
     -- dart
     vim.lsp.enable('dartls')
+
+    -- esp32
+    vim.lsp.config("clangd", require("esp32").lsp_config())
+    vim.lsp.enable("clangd")
 
     -- misc
     -- format on save
